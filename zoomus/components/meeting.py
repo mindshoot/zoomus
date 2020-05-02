@@ -69,6 +69,7 @@ class MeetingComponentV2(base.BaseComponent):
         util.require_keys(kwargs, ["id", "action", "registrants"])
         return self.put_request(
             "/meetings/{}/registrants/status".format(kwargs.get("id")), 
+            params={k: v for k, v in kwargs.items() if k in ('occurrence_id')},
             data={"action": kwargs.get('action'),
                   "registrants": kwargs.get('registrants')}
         )
