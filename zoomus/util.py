@@ -182,7 +182,11 @@ class ApiClient(object):
         if data and not is_str_type(data):
             data = json.dumps(data)
         if headers is None and self.config.get("version") == API_VERSION_2:
-            headers = {"Authorization": "Bearer {}".format(self.config.get("token"))}
+            headers = {
+                "Authorization": "Bearer {}".format(self.config.get("token")),
+                "Content-Type": "application/json",
+            }
+
         return requests.put(
             self.url_for(endpoint),
             params=params,
@@ -244,13 +248,23 @@ def require_keys(d, keys, allow_none=True):
 def date_to_str(d):
     """Convert date and datetime objects to a string
 
-    Note, this does not do any timezone conversion.
+    Convert a date to a string that is recognised by the Zoom REST API. Note that
+    the API distinguishes between two different date formats:
+
+    - A GMT time (eg yyyy-MM-ddTHH:mm:ssZ)
+    - A local time (eg yyyy-MM-ddTHH:mm:ss) - in which case the timezone is passed in
+      elsewhere or an account default is used
+
+    This function will use a local-time format if the date or datetime doesn't have
+    tzinfo, or give a GMT if it does
 
     :param d: The :class:`datetime.date` or :class:`datetime.datetime` to
               convert to a string
     :returns: The string representation of the date
     """
-    return d.strftime("%Y-%m-%dT%H:%M:%SZ")
+    if d.tzinfo:
+        return d.astimezone(tz=None).strftime("%Y-%m-%dT%H:%M:%SZ") # This is in GMT
+    return d.strftime("%Y-%m-%dT%H:%M:%S") # This is a local time
 
 
 def generate_jwt(key, secret):

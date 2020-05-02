@@ -59,6 +59,20 @@ class MeetingComponentV2(base.BaseComponent):
         util.require_keys(kwargs, "id")
         return self.get_request("/meetings/{}".format(kwargs.get("id")), params=kwargs)
 
+    def get_registrants(self, **kwargs):
+        util.require_keys(kwargs, "id")
+        return self.get_request(
+            "/meetings/{}/registrants".format(kwargs.get("id")), params=kwargs
+        )
+
+    def update_registrant_status(self, **kwargs):
+        util.require_keys(kwargs, ["id", "action", "registrants"])
+        return self.put_request(
+            "/meetings/{}/registrants/status".format(kwargs.get("id")), 
+            data={"action": kwargs.get('action'),
+                  "registrants": kwargs.get('registrants')}
+        )
+
     def update(self, **kwargs):
         util.require_keys(kwargs, "id")
         if kwargs.get("start_time"):
